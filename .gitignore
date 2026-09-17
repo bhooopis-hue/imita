@@ -1,5 +1,10 @@
+node_modules/
+.sites-runtime/
 .env
+dist/server/
+dist/.openai/
+*.sqlite
+
 .env.*
 !.env.example
-node_modules/
 .DS_Store
