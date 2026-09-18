@@ -1,28 +1,29 @@
 # Entrega
 
-Multilingual sales funnel (Spanish default, English and Brazilian Portuguese). Static website with monthly/annual plans, demo checkout, optional Team upgrade, demo confirmation, FAQ and preliminary legal/contact pages.
+A multilingual application for creative freelancers, plus the original sales funnel. Spanish is the default; English and Portuguese are available throughout.
 
-## Status
-No real payments, accounts, subscription provisioning, emails or SaaS backend. The banner and checkout explicitly disclose this. No card input is collected. Checkout fields are not transmitted or persisted by the application. Amounts remain BRL in all languages.
+## Current private alpha
 
-## Commercial launch prerequisites
-- Validate the brand, features, plan limits and prices. Current monthly prices: Professional BRL 29 and Team BRL 79; annual BRL 290 and BRL 790.
-- Implement and deliver the actual product before advertising it as available.
-- Supply seller identity, fiscal information, address and verified support contact. Review and complete terms, privacy and refund policy for the business and target markets.
-- Connect the owner's Stripe account using server-side secrets, recurring Stripe Prices and hosted Stripe Checkout. Do not put secret keys in client code.
-- Create checkout sessions on the server from an allowlisted plan/interval; never accept a client-provided amount. Select the final plan before starting Stripe Checkout.
-- Verify signed Stripe webhooks and process events idempotently. Provision access only after authoritative payment/subscription events; the return URL is not proof of payment.
-- Add authentication and Stripe Customer Portal for cancellation and subscription management. Decide upgrade proration and display it before consent.
-- Replace the demo flow and disclosures only once these capabilities work and the offering is ready for sale.
+The application at `/app` saves clients, projects, deadlines, tasks and delivery links in D1. Review pages support comments, approvals and change requests with server-side permissions. The current site uses ChatGPT sign-in and remains private to its owner.
 
-Routes: /, /checkout, /upgrade, /confirmation, /terms, /privacy, /refunds, /contact.
+The sales pages at `/`, `/checkout`, `/upgrade` and `/confirmation` are still demonstrations. No real payments or subscriptions are created. Prices shown on those pages are proposals, not enforced paid entitlements.
 
-Source: dist/app.js contains translated copy and UI logic; dist/style.css contains responsive styles. HTML entrypoints are duplicated for static route handling. Language and pricing selections are in URL parameters. Google Fonts is optional and falls back to sans-serif.
+## Run checks and build
 
-## Run locally
+Requires Node.js 24+.
 
-No build or dependency installation is required. Run `python -m http.server 8080 --directory dist` from the repository root, then open http://localhost:8080.
+```sh
+npm ci
+npm test
+npm run build
+```
 
-## Hosting
+Deployment requires a Worker runtime, the `DB` D1 binding, the generated migrations and a trusted identity gateway. A static server only previews the marketing pages and cannot run the application.
 
-Serve `dist/` as the website root. This repository is a source copy; updates here do not automatically publish to the existing ChatGPT Site. Stripe payments remain in demo mode.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for architecture, security boundaries, test coverage and the remaining requirements before commercial launch. This GitHub copy does not automatically deploy to the existing ChatGPT Site.
+
+## Cloudflare Pages
+
+The public marketing funnel can be deployed from this repository with `dist` as the build output directory. `functions/api/pricing.js` provides the IP-country currency endpoint using trusted Cloudflare edge metadata. The `_headers` file adds baseline response protections.
+
+The customer application remains a private beta on its existing authenticated host. On Cloudflare, `/app` intentionally shows a private-beta notice until a public identity provider, a D1 database and account provisioning are configured. Do not expose `worker/api.mjs` publicly without replacing the current host-specific identity headers with verified Cloudflare authentication.
