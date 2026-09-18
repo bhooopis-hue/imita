@@ -4,7 +4,3 @@ node_modules/
 dist/server/
 dist/.openai/
 *.sqlite
-
-.env.*
-!.env.example
-.DS_Store

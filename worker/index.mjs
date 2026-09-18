@@ -1,7 +1,9 @@
 import { api } from './api.mjs';
+import { pricing } from './pricing.mjs';
 import { assets } from './assets.mjs';
 export default {async fetch(request,env){
  const url=new URL(request.url),path=url.pathname.replace(/\/$/,'')||'/';
+ if(path==='/api/pricing')return pricing(request);
  if(path.startsWith('/api/'))return api(request,env);
  if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});
  const app=path==='/app'||path==='/review';

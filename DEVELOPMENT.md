@@ -33,6 +33,18 @@ The schema is in `db/schema.ts`. Use `npm run db:generate` after schema changes,
 
 ## Still required before selling
 
+### Localized demo prices
+
+`GET /api/pricing` reads Cloudflare's `request.cf.country` (IP-derived edge metadata). It does not accept a country/IP supplied by the browser, does not store visitor IPs, and does not send them to an external geolocation service. Missing metadata is explicitly reported; the page falls back to BRL and offers manual selection. IP location is approximate, particularly with VPNs. Deployment behind another proxy must preserve the original trusted `request.cf` metadata.
+
+The country mapping is derived from Unicode CLDR 48.2 (see THIRD_PARTY_NOTICES.md). Update it when countries change currencies. Supported live conversions depend on ExchangeRate-API's available codes. The Worker fetches the BRL dataset from its open-access endpoint, validates freshness (maximum 72 hours), caches only this shared dataset until its next update (1–24 hours), and sends only calculated product prices to the browser. The provider is attributed on sales pages. No raw rate dataset is redistributed. Provider outages and unsupported currencies fall back explicitly to original BRL prices.
+
+Manual selection is stored as a browser preference and retained in funnel URLs. Language changes do not change currency. Monthly, annual, upgrade, hero and zero-charge amounts all use the same quote, with currency-specific decimals and rounded upgrade differences. Prices remain estimates in a demo; **never use this API or browser amounts to authorize Stripe payments**. Production billing must validate supported presentment currencies and create authoritative quotes/Prices server-side.
+
+References: https://developers.cloudflare.com/workers/runtime-apis/request/ and https://www.exchangerate-api.com/docs/free.
+
+### Launch checklist
+
 - Choose and configure the public customer account/onboarding model and external review access.
 - Connect real Stripe Checkout, Customer Portal and idempotent signed webhooks; enforce entitlements and plan limits on the server.
 - Team workspaces, invitations, roles, assignments, reminders and branding features are not implemented.
