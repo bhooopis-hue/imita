@@ -22,8 +22,17 @@ Deployment requires a Worker runtime, the `DB` D1 binding, the generated migrati
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for architecture, security boundaries, test coverage and the remaining requirements before commercial launch. This GitHub copy does not automatically deploy to the existing ChatGPT Site.
 
-## Cloudflare Pages
+## Deploy to Cloudflare Workers
 
-The public marketing funnel can be deployed from this repository with `dist` as the build output directory. `functions/api/pricing.js` provides the IP-country currency endpoint using trusted Cloudflare edge metadata. The `_headers` file adds baseline response protections.
+The public funnel and its `/api/pricing` endpoint are packaged as a Cloudflare Worker. The project includes `wrangler.jsonc` for the existing `imita` Worker, so the limited dashboard uploader is not required.
+
+```sh
+npm ci
+npm run deploy
+```
+
+The command builds the bundle and then runs `wrangler deploy`. Authenticate Wrangler with the Cloudflare account that owns `imita` and `entrega.cloud`; once that custom domain is attached to the `imita` Worker, the command updates the live domain. If `entrega.cloud` is currently attached to another Worker, change that custom-domain attachment in Cloudflare before deploying.
+
+`functions/api/pricing.js` and `_headers` remain available for a separate Pages-only funnel deployment, but they are not used by the Worker deployment above.
 
 The customer application remains a private beta on its existing authenticated host. On Cloudflare, `/app` intentionally shows a private-beta notice until a public identity provider, a D1 database and account provisioning are configured. Do not expose `worker/api.mjs` publicly without replacing the current host-specific identity headers with verified Cloudflare authentication.
