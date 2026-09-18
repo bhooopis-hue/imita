@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {visitorCountry,priceQuote,pricing} from '../worker/pricing.mjs';
+import {onRequestGet,onRequest} from '../functions/api/pricing.js';
 const dataset=()=>({result:'success',base_code:'BRL',time_last_update_unix:Math.floor(Date.now()/1000)-10,time_next_update_unix:Math.floor(Date.now()/1000)+86400,rates:{BRL:1,USD:.19,EUR:.17,MXN:3.61,JPY:28.1234,CAD:.26,BHD:.071}});
 const request=(country,query='')=>{const r=new Request('https://entrega.test/api/pricing'+query);if(country)Object.defineProperty(r,'cf',{value:{country}});return r};
 test('IP country selects the currency independently of language; explicit selection wins',()=>{
@@ -26,4 +27,10 @@ test('shared rate cache never caches location; API exposes only product prices a
  assert.equal((await us.json()).currency,'USD');const q=await br.json();assert.equal(q.currency,'BRL');assert.equal(q.rates,undefined);assert.equal(calls,1);assert.match(br.headers.get('cache-control'),/no-store/);
  const bad=await pricing(request('US','?currency=%3Cscript%3E'),{fetcher,cache});assert.equal(bad.status,400);
  const fail=await pricing(request('US'),{fetcher:async()=>{throw Error('offline')},cache:null});assert.equal((await fail.json()).reason,'rates-unavailable');
+});
+test('Cloudflare Pages exposes the pricing function and rejects other methods',async()=>{
+ assert.equal(typeof onRequestGet,'function');
+ const response=await onRequest();
+ assert.equal(response.status,405);
+ assert.equal(response.headers.get('allow'),'GET');
 });
